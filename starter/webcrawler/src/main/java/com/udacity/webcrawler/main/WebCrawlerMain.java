@@ -33,11 +33,24 @@ public final class WebCrawlerMain {
 
   private void run() throws Exception {
     Guice.createInjector(new WebCrawlerModule(config), new ProfilerModule()).injectMembers(this);
-
     CrawlResult result = crawler.crawl(config.getStartPages());
     CrawlResultWriter resultWriter = new CrawlResultWriter(result);
     // TODO: Write the crawl results to a JSON file (or System.out if the file name is empty)
+    String path = config.getResultPath();
+    if (!path.isEmpty()) {
+      resultWriter.write(Path.of(path));
+    } else {
+      resultWriter.write(new OutputStreamWriter(System.out));
+    }
     // TODO: Write the profile data to a text file (or System.out if the file name is empty)
+    String profilePath = config.getProfileOutputPath();
+    if (!profilePath.isEmpty()) {
+      profiler.writeData(Path.of(profilePath));
+    } else {
+      Writer outPut = new OutputStreamWriter(System.out);
+      profiler.writeData(outPut);
+      outPut.flush();
+    }
   }
 
   public static void main(String[] args) throws Exception {

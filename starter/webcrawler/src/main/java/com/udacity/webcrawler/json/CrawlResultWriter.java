@@ -1,7 +1,20 @@
 package com.udacity.webcrawler.json;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.exc.StreamWriteException;
+import com.fasterxml.jackson.databind.DatabindException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.io.Writer;
+import java.nio.Buffer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Objects;
 
 /**
@@ -28,6 +41,11 @@ public final class CrawlResultWriter {
   public void write(Path path) {
     // This is here to get rid of the unused variable warning.
     Objects.requireNonNull(path);
+    try (BufferedWriter writer = Files.newBufferedWriter(path, StandardOpenOption.CREATE,StandardOpenOption.APPEND)) {
+      write(writer);
+    } catch (IOException e) {
+      throw new RuntimeException("Failed to write to the given path: " + path, e);
+    }
     // TODO: Fill in this method.
   }
 
@@ -39,6 +57,12 @@ public final class CrawlResultWriter {
   public void write(Writer writer) {
     // This is here to get rid of the unused variable warning.
     Objects.requireNonNull(writer);
-    // TODO: Fill in this method.
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
+    try {
+      mapper.writeValue(writer,result);
+    } catch (IOException e) {
+        throw new RuntimeException(e);
+    }
   }
 }
